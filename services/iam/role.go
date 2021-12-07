@@ -17,14 +17,16 @@ func (i *IAM) CreateRole(ctx context.Context, input *iam.CreateRoleInput) (*iam.
 		return nil, apierror.New(apierror.ErrBadRequest, "invalid input", nil)
 	}
 
-	log.Infof("creating iam role: %s", *input.RoleName)
+	log.Infof("creating iam role: %s", aws.StringValue(input.RoleName))
 
-	output, err := i.Service.CreateRoleWithContext(ctx, input)
+	out, err := i.Service.CreateRoleWithContext(ctx, input)
 	if err != nil {
 		return nil, ErrCode("failed to create role", err)
 	}
 
-	return output.Role, nil
+	log.Debugf("got output from create role %s: %+v", aws.StringValue(input.RoleName), out)
+
+	return out.Role, nil
 }
 
 // DeleteRole handles deleting an IAM role
@@ -35,8 +37,7 @@ func (i *IAM) DeleteRole(ctx context.Context, input *iam.DeleteRoleInput) error 
 
 	log.Infof("deleting iam role %s", aws.StringValue(input.RoleName))
 
-	_, err := i.Service.DeleteRoleWithContext(ctx, input)
-	if err != nil {
+	if _, err := i.Service.DeleteRoleWithContext(ctx, input); err != nil {
 		return ErrCode("failed to delete role", err)
 	}
 
@@ -51,14 +52,16 @@ func (i *IAM) GetRole(ctx context.Context, roleName string) (*iam.Role, error) {
 
 	log.Infof("getting iam role %s", roleName)
 
-	output, err := i.Service.GetRoleWithContext(ctx, &iam.GetRoleInput{
+	out, err := i.Service.GetRoleWithContext(ctx, &iam.GetRoleInput{
 		RoleName: aws.String(roleName),
 	})
 	if err != nil {
 		return nil, ErrCode("failed to get role", err)
 	}
 
-	return output.Role, nil
+	log.Debugf("got output from get role %s: %+v", roleName, out)
+
+	return out.Role, nil
 }
 
 // PutRolePolicy handles attaching an inline policy to IAM role
@@ -67,14 +70,14 @@ func (i *IAM) PutRolePolicy(ctx context.Context, input *iam.PutRolePolicyInput) 
 		return apierror.New(apierror.ErrBadRequest, "invalid input", nil)
 	}
 
-	log.Infof("attaching inline policy to iam role: %s", *input.RoleName)
+	log.Infof("attaching inline policy to iam role: %s", aws.StringValue(input.RoleName))
 
 	out, err := i.Service.PutRolePolicyWithContext(ctx, input)
 	if err != nil {
 		return ErrCode("failed to attach policy to role", err)
 	}
 
-	log.Debugf("got output from put role policy %+v", out)
+	log.Debugf("got output from put role policy: %+v", out)
 
 	return nil
 }
@@ -95,7 +98,7 @@ func (i *IAM) GetRolePolicy(ctx context.Context, role, policy string) (string, e
 		return "", ErrCode("failed to get role policy", err)
 	}
 
-	log.Debugf("got output from getting role policy %+v", out)
+	log.Debugf("got output from get role policy: %+v", out)
 
 	// Document is returned url encoded, we must decode it to unmarshal and compare
 	d, err := url.QueryUnescape(aws.StringValue(out.PolicyDocument))
@@ -123,7 +126,7 @@ func (i *IAM) ListRolePolicies(ctx context.Context, role string) ([]string, erro
 		return nil, ErrCode("failed to list role polcies", err)
 	}
 
-	log.Debugf("got output listing role policies for '%s': %+v", role, out)
+	log.Debugf("got output from list role policies for '%s': %+v", role, out)
 
 	return aws.StringValueSlice(out.PolicyNames), nil
 }
