@@ -3,7 +3,7 @@ module github.com/YaleSpinup/aws-go
 go 1.18
 
 require (
-	github.com/YaleSpinup/apierror v0.1.1
+	github.com/YaleSpinup/apierror v0.1.2
 	github.com/aws/aws-sdk-go v1.45.25
 	github.com/pkg/errors v0.9.1
 	github.com/sirupsen/logrus v1.9.3
