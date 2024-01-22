@@ -4,7 +4,7 @@ go 1.21
 
 require (
 	github.com/YaleSpinup/apierror v0.1.5
-	github.com/aws/aws-sdk-go v1.47.9
+	github.com/aws/aws-sdk-go v1.50.0
 	github.com/pkg/errors v0.9.1
 	github.com/sirupsen/logrus v1.9.3
 )
